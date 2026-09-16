@@ -1,0 +1,96 @@
+name: Docker_in_pipiline
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  python-test:
+    name: Validate Python Container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Python Script
+        run: |
+          docker run --name container-python python:3.11-alpine python -c "print('Python Service Executed Successfully!'); assert 1 + 1 == 2"
+      - name: Show Logs & Cleanup
+        if: always()
+        run: |
+          docker logs container-python
+          docker rm container-python
+
+  redis-test:
+    name: Validate Redis Container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start Redis Container
+        run: docker run -d --name container-redis -p 6379:6379 redis:alpine
+      - name: Test Redis Operations
+        run: |
+          sleep 2
+          docker exec container-redis redis-cli set status "Redis Operational"
+          docker exec container-redis redis-cli get status | grep "Redis Operational"
+      - name: Show Logs & Cleanup
+        if: always()
+        run: |
+          docker logs container-redis
+          docker stop container-redis && docker rm container-redis
+
+  postgres-test:
+    name: Validate PostgreSQL Container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run PostgreSQL Container
+        run: |
+          docker run -d \
+            --name my-postgres \
+            -e POSTGRES_USER=Fellype \
+            -e POSTGRES_PASSWORD=060881 \
+            -e POSTGRES_DB=testdb \
+            -p 5432:5432 \
+            postgres:15-alpine
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          until docker exec my-postgres pg_isready -U Fellype -d testdb; do
+            echo "Aguardando o PostgreSQL inicializar..."
+            sleep 2
+          done
+
+      - name: Execute SQL Query and Validate
+        run: |
+          docker exec my-postgres psql -U Fellype -d testdb -c "SELECT 'Operacao realizada com sucesso!' AS status;"
+
+      - name: Display Container Logs
+        run: |
+          docker logs my-postgres
+
+      - name: Stop and Remove Container
+        if: always()
+        run: |
+          docker stop my-postgres
+          docker rm my-postgres
+
+  nginx-zap-test:
+    name: Validate Nginx & OWASP ZAP Containers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start Nginx Target Container
+        run: docker run -d --name container-nginx -p 8080:80 nginx:alpine
+      - name: Validate Nginx via HTTP
+        run: |
+          sleep 2
+          curl -I http://localhost:8080 | grep "200 OK"
+      - name: Run OWASP ZAP Scan against Nginx
+        run: |
+          docker run --net=host --name container-zap zaproxy/zap-stable zap-baseline.py \
+            -t http://localhost:8080 -I || true
+      - name: Show Logs & Cleanup
+        if: always()
+        run: |
+          docker logs container-nginx
+          docker logs container-zap
+          docker stop container-nginx && docker rm container-nginx container-zap
