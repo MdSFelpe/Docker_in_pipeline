@@ -1,6 +1,6 @@
 # 🚀 Docker CI/CD Multi-Service Validation Pipeline
 
-[![Docker CI/CD Pipeline](https://github.com/USERNAME/REPOSITORY/actions/workflows/pipeline.yml/badge.svg)](https://github.com/USERNAME/REPOSITORY/actions)
+[![Docker CI/CD Pipeline]([![Docker_in_pipiline](https://github.com/MdSFelpe/Docker_in_pipeline/actions/workflows/docker_in_pipiline.yml/badge.svg)](https://github.com/MdSFelpe/Docker_in_pipeline/actions/workflows/docker_in_pipiline.yml))
 
 > **Projeto Prático de Automação e DevOps:** Implementação de uma pipeline de Integração Contínua (CI) que orquestra, valida e analisa o ciclo de vida de múltiplos serviços rodando em containers Docker.
 
