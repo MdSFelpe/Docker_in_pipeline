@@ -48,7 +48,7 @@ jobs:
           docker run -d \
             --name my-postgres \
             -e POSTGRES_USER=Fellype \
-            -e POSTGRES_PASSWORD=060881 \
+            -e POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} \
             -e POSTGRES_DB=testdb \
             -p 5432:5432 \
             postgres:15-alpine
